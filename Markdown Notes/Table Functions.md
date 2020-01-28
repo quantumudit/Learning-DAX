@@ -112,7 +112,7 @@ The required DAX code will be -:
 ```
 In the below image we can see that the two tables are connected through "ProductID" in a one-to-many relationship but, in the one-side of the relationship we don't have any corresponding "Product Name" for the "ProductID - 4" & "ProductID - 5".
 
-![Image](Image_1.png)
+![Image_1](https://user-images.githubusercontent.com/54057814/73245271-d96d2300-41d1-11ea-8562-438f6e6d740c.png)
 
 Therefore, an additional blank row has been created in the one-side of the relationship that stores all the values of the missing "ProductID".
 
@@ -153,7 +153,7 @@ COUNTROWS(
 ```
 The below image shows the different results produced by using `ALL()`, `VALUES()`, `DISTINCT()` & `ALLNOBLANKROW()` within `COUNTROWS()`.
 
-![Image](Image_2.png)
+![Image_2](https://user-images.githubusercontent.com/54057814/73245415-2c46da80-41d2-11ea-9d04-ccdfa28cebc1.png)
 
 > Note :
 - If we have some data in the many-side of the relationship but, not on the one-side then, the relationship is called as an "Invalid Relationship". 
@@ -171,7 +171,7 @@ The below image shows the different results produced by using `ALL()`, `VALUES()
  If we have 5 products and their sum is 100 then, with `ALL()` function, even if we take a "product" slicer and select only 3 products, still, the grand total will show 100.
  But, in case of "ALLSELECTED()" the sum in the grand total will be the aggregate of the selected 3 products only.
  
- ![Image](Image_3.png)
+![Image_3](https://user-images.githubusercontent.com/54057814/73245448-3e287d80-41d2-11ea-9ef5-dc5c1f4c1c38.png)
  
  ## SELECTEDVALUE()
  ---
