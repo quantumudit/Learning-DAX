@@ -1,3 +1,0 @@
-## TREATAS()
----
-- `TREATAS()` 
