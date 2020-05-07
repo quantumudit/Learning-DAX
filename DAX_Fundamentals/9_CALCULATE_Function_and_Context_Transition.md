@@ -1,4 +1,5 @@
-# The `CALCULATE()` Function
+# The `CALCULATE()` Function & Context Transition
+
 
 The basic `CALCULATE()` function looks as follows :
 
@@ -319,3 +320,6 @@ CALCULATE (
 )
 ```
 The above formula, temporarily makes the relationship between the "*Customer*" and "*Sales*" table bi-directional and thus, the "*Date*" filters can now propagate to the "*Customer*" table through the "*Sales*" table to give us the correct result for "*Number of Customers*" by "*Month*".
+
+
+### Context Transition
