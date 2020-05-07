@@ -1,4 +1,6 @@
-# Evaluation Context
+# EVALUATION CONTEXT
+
+## Basic Evaluation Context
 
 ### RANKING (USING THE CONCEPTS OF EVALUATION CONTEXT)
 ---
@@ -67,3 +69,32 @@ related to the current one.
 By default, filter context always propagates from the one-side to the many-side of the relationships *(Typically, from dimension tables to the fact table)*
 
 But, there is a option of cross-filtering, where developers can choose to alter the direction of filter propagation as well.
+
+
+### Variables & Evaluation Context
+
+Variables are computed in the evaluation where they are defined and not in the one where they are used.
+
+Therefore, `CALCULATE()` can't modify the value of a variable because its already computed.
+
+Therefore, the following ratio calculation will always execute the result as `1` irrespective of the row context because of the use of `VAR` in a wrong way :
+
+```DAX
+
+-- Wrong use of VAR
+
+Wrong Ratio =
+
+VAR
+Amt = [Sales Amount]
+
+RETURN
+
+DIVIDE
+(
+  Amt,
+  CALCULATE ( Amt, ALL ( Sales ) )
+)
+```
+
+## Advanced Evaluation Context
