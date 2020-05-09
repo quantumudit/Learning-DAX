@@ -7,18 +7,18 @@
 
 - The most commonly used date functions available in DAX are follows -:
 
-## CALANDERAUTO()
----
+## `CALANDERAUTO()`
+
 
 * Automatically creates a date table based on the database content.
 * The first argument is the last month of the fiscal year.
 
-Syntax -:
+*Syntax -:*
 
 ````dax
 Date = CALENDERAUTO (6)
 ````
-## CALENDER()
+## `CALENDER()`
 ---
 
 * Returns a table with a single column named "Date" containing continuous set of dates in the given range (Inclusive).
@@ -26,7 +26,7 @@ Date = CALENDERAUTO (6)
 Syntax -:
 
 ````dax
-Date = 
+Date =
 CALANDER(
     DATE (2005,1,1),
     DATE (2015, 12, 31)
@@ -35,7 +35,7 @@ CALANDER(
 Or,
 
 ````dax
-Date = 
+Date =
 CALANDER (
     MIN (Sales[OrderDate]),
     MAX (Sales[OrderDate])
@@ -59,11 +59,11 @@ We can use filter and other modifiers for making our desired date table as follo
 Date_Table_2 =
 
 VAR FirstSalesDate = MIN(Sales[Order Date])
-VAR YearFirstOrder = YEAR(FirstSalesDate) 
+VAR YearFirstOrder = YEAR(FirstSalesDate)
 
 RETURN
     FILTER(
-        CALENDARAUTO(), 
+        CALENDARAUTO(),
         YEAR( [Date] ) >= YearFirstOrder
         )
 ````
@@ -74,13 +74,13 @@ But, this date table will only have one column and thus, we need to extract vari
 To do this, we have to create a date table with the following DAX code -:
 
 ```dax
-Date Table = 
+Date Table =
 
 VAR FirstSalesDate = MIN( Sales[Order Date])
 VAR YearFirstOrder = YEAR( FirstSalesDate)
 VAR Dates =
     FILTER(
-        CALENDARAUTO(), 
+        CALENDARAUTO(),
         YEAR([Date]) >= YearFirstOrder
     )
 RETURN
@@ -101,28 +101,26 @@ Then, we can easily slice and dice the data using this date table by creating a 
 ## Special Case Scenario
 ---
 
-* Let's assume there is a case where a fact table has two date columns,viz, `Order Date` and `Delivery Date`.
+Let's assume there is a case where a fact table has two date columns,viz, `Order Date` and `Delivery Date`.
 
-* We have already created a date table and created a relationship between `Date[Date]` and `Sales[Order Date]` and we know that we can't create multiple active relationship between two tables.
+We have already created a date table and created a relationship between `Date[Date]` and `Sales[Order Date]` and we know that we can't create multiple active relationship between two tables.
 
-* So, although we can slice the `Sales[Order Date]` column using our date table but, we can't slice the `Sales[Delivery Date]`.
+So, although we can slice the `Sales[Order Date]` column using our date table but, we can't slice the `Sales[Delivery Date]`.
 
-* Now, we have two options to resolve this issue.
-    1. To create another "Date" Table and link it with the `Sales[Delivery Date]` column.
-    2. To use the `USERELATIONSHIP()` function.
+Now, we have two options to resolve this issue.
+1. To create another "Date" Table and link it with the `Sales[Delivery Date]` column.
+1. To use the `USERELATIONSHIP()` function.
 
-* Usually, it is always preferred to choose the 2nd option, i.e., to use the `USERELATIONSHIP()` function rather than creating another "Date" table.
+Usually, it is always preferred to choose the 2nd option, i.e., to use the `USERELATIONSHIP()` function rather than creating another "Date" table.
 
-* Example of `USERELATIONSHIP()` -:
+***Example of `USERELATIONSHIP()` -:***
 
 ```dax
 //Calculating Delivery Amount
 
-Delivered Amount = 
+Delivered Amount =
 CALCULATE(
-    [Sales Amount], 
+    [Sales Amount],
     USERELATIONSHIP(Sales[Delivery Date],'Date Table'[Date])
 )
 ```
-
-
