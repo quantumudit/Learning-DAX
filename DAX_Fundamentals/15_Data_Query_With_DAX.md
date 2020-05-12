@@ -1,15 +1,15 @@
-## EVALUATE Syntax
----
+## `EVALUATE` Clause
 
-- `EVALUATE` is the statement used to write DAX queries.
-- The syntax of `EVALUATE` is as follows -:
+`EVALUATE` is the statement used to write DAX queries. It can be thought as the `SELECT *` (of *SQL*) for DAX queries.
+
+The syntax of `EVALUATE` is as follows -:
 
 ```dax
 DEFINE
     MEASURE <table_name>[col_Name] = <expression>
-EVALUATE 
+EVALUATE
     <table_name>
-ORDER BY 
+ORDER BY
     <expression> [ASC|DESC],
     <expression> [ASC|DESC],
     .
@@ -18,22 +18,166 @@ ORDER BY
 START AT <Value1>, <Value2>, ...
 ```
 
-Let's assume, we want to query a full table with `EVALUATE`, then, we may use the following expression -:
+- `DEFINE` allow us to create local measures (Very similar to the concept of "*Query Scoped Calculated Members*" in *MDX*).
+- `ORDER BY` allow us to sort the output table by columns in ascending (`ASC`) or, descending (`DESC`) order.
+
+Let's say, we want to query a full table with `EVALUATE`, then, we may use the following expression -:
 
 ```dax
 EVALUATE
-    Store
+'Product'
+
 ORDER BY
-    Store[Continent] DESC,
-    Store[Country] DESC,
-    Store[City] ASC
+'Product'[Category],
+'Product'[Subcategory],
+'Product'[Product Name]
 ```
-- The "START AT" expression is no more used in DAX.
+By default, `ORDER BY` Clause sorts everything in ascending order and to change the sorting type, we can write the following DAX code :
 
-## CALCULATETABLE()
----
+```DAX
+EVALUATE
+'Product'
 
-- `CALCULATETABLE()`
+ORDER BY
+'Product'[Category] DESC,
+'Product'[Subcategory] DESC,
+'Product'[Product Name] ASC
+```
+> ***Note :***</br> We can also sort the `'Product'[Product Name]` without `ASC` as the default sort order is ascending.
+
+- The `START AT` clause is no more used in DAX.
+
+## `CALCULATETABLE()`
+
+`CALCULATETABLE()` is identical to the `CALCULATE()` function in terms of features and way of calculation but unlike `CALCULATE()`, it evaluates a table expression and returns a table as output.
+
+>***Note :***</br>`CALCULATE()` returns a scalar value or, a single number/string as the output.
+
+
+***Using `FILTER()` to filter the table :***
+
+To filter only the *red color products*, we need to write the following DAX code :
+
+```DAX
+EVALUATE
+FILTER ( 'Product', 'Product'[Color] = "Red" )
+```
+
+`FILTER()` traverses the whole *Product* table and checks for `'Product'[Color] = "Red"` for each row item.
+
+This process is an inefficient way and could affect the performance when the table has millions of rows.
+
+We can use `CALCULATETABLE()` instead :
+
+***Using `CALCULATETABLE()` to filter the table :***
+
+The syntax of `CALCULATETABLE()` is exactly same as that of `FILTER()` but, in terms of performance it is much more efficient.
+
+So, to filter only the *red color products* much efficiently, we can also write the following DAX code :
+
+```dax
+EVALUATE
+CALCULATETABLE ( 'Product', 'Product'[Color] = "Red" )
+```
+Internally, `CALCULATETABLE()` prepares the filter context prior to the actual calculation rather than invoking the filter expression each time to check for the condition in each row of the table, as follows :
+
+```dax
+EVALUATE
+CALCULATETABLE (
+    'Product',
+    FILTER ( ALL ( 'Product'[Color] ), 'Product'[Color] = "Red" )
+)
+```
+So, let's say, if we have 10 distinct product colors, then, the `FILTER()` created by `CALCULATETABLE()` internally iterates only for 16 times, whereas, the former filteration of table with just the `FILTER()` statement iterates over all the rows of the *Product* table which can be in the order of thousands or, millions.
+
+>***Note :***</br>
+*The key reason for performance improvement by `CALCULATETABLE()` is tnvoking a smaller table to iterate over and thus preparing the filter context prior to the calculation*
+
+Similarly, if we want to see the *Products* table where, "*Product Color*" can be "*Red, Black or, Blue*" then :
+
+```DAX
+EVALUATE
+CALCULATETABLE (
+    'Product',
+    'Product'[Color] IN { "Red", "Black", "Blue" }
+    )
+```
+
+***Where to use `FILTER()`***
+
+Althoug, it seems as if `CALCULATETABLE()` replaces the `FILTER()` but, there are certain situation where we can't use `CALCULATETABLE()`.
+
+Suppose, if we want to see the "*Product*" table only for the products where the *Sales Amount > 1000000* then, we can't use `CALCULATETABLE()`
+
+Such scenarios requires iteration over the whole table and thus, `CALCULATETABLE()` just doesn't work here.
+
+So, the DAX expression to execute this statement is :
+
+```DAX
+EVALUATE
+FILTER('Product',[Sales Amount]>1000000)
+```
+>***Note :***</br>
+
+
+
+
+## `SELECTCOLUMNS()`
+
+The `SELECTCOLUMNS()` functions is used select and show some specific columns from a table and from its related table as well.
+
+Each expression of this function is executed in a row context.
+
+*For example :*</br>
+
+```DAX
+EVALUATE
+SELECTCOLUMNS (
+    'Product',
+    "Category",RELATED('Product Category'[Category]),
+    "Color", 'Product'[Color],
+    "Name", 'Product'[Product Name],
+    "Sales Amount", [Sales Amount]
+)
+```
+## `ADDCOLUMNS()`
+
+The `ADDCOLUMNS()` functions returns an existing table and also gives the flexibility to add more columns to it.
+
+*For example :*</br>
+If we want to create a separate table with *Sales Amount* column added to the *Products* table then, we have to write the following DAX expression :
+
+```DAX
+EVALUATE
+ADDCOLUMNS (
+    'Product',
+    "Sales Amount", [Sales Amount]
+)
+```
+
+### Using `ADDCOLUMNS()` & `SELECTCOLUMNS()` Together
+
+```DAX
+EVALUATE
+ADDCOLUMNS (
+    SELECTCOLUMNS (
+        'Product',
+        "Color", 'Product'[Color],
+        "Product Amount", [Sales Amount]
+    ),
+    "Product Color Amount", [Sales Amount]
+)
+```
+
+
+
+
+
+
+
+
+
+
 
 
 ## UNION()
@@ -48,7 +192,7 @@ Let's create two tables named "SunMon" and "MonTue" from the "Dates" table (Henc
 ```dax
 EVALUATE
 
-VAR SunMon = 
+VAR SunMon =
 	CALCULATETABLE(
 		VALUES('Date'[Day of Week]),
 		'Date'[Day of Week Number] IN {1,2}
@@ -70,7 +214,7 @@ RETURN
 ```
 The Return statement will execute two row elements, i.e, "Sunday" and "Monday" with their respective "Sales Amount".
 
-Similarly, if we want the "Sales Amount" for "Monday" and "Tuesday" then, we can write the following DAX code as the `RETURN` statement 
+Similarly, if we want the "Sales Amount" for "Monday" and "Tuesday" then, we can write the following DAX code as the `RETURN` statement
 
 ```dax
 RETURN
@@ -179,7 +323,7 @@ VAR ProdAndClass =
 			"High"
 			)
 	)
-	
+
 RETURN ProdAndClass
 ORDER BY [Sales] DESC
 ```
@@ -197,4 +341,3 @@ RETURN
 ```
 
 The above code will execute a table with 3 row elements,i.e., "Low", "Medium" and "High" and their corresponding "Sales Amount".
-
