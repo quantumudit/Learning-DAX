@@ -218,9 +218,170 @@ ADDCOLUMNS (
 
 `SUMMARIZECOLUMNS()` is the more advanced version of `SUMMARIZE()` but, it can't be used as a *Calculated Measure* in *Power BI* or, *Power Pivot* as it requires the *EVALUATE* clause for execution and doesn't support the context transition.
 
-Therefore, it is only useful for querying te tabular models.
+Therefore, it is only useful for querying the tabular models and in reporting services.
 
-To get 
+To get the *Sales Amount* grouped by the *Product Category* and *Product Color* with `SUMMARIZECOLUMNS()`, we have to wwrite the following DAX expression :
+
+```DAX
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Product Category'[Category],
+    'Product'[Color],
+    "Sales Amount", [Sales Amount]
+)
+```
+***Difference between `SUMMARIZE()` and `SUMMARIZECOLUMNS()`***
+
+- `SUMMARIZECOLUMNS()` has the simpler syntax and the empty rows gets automatically removed.
+
+- Unlike `SUMMARIZE()`, we don't have to provide the table name here.
+- `SUMMARIZE()` can group the columns with the measure coming from a single table, whereas, `SUMMARIZECOLUMNS()` can group measures from different tables toggather.
+- `SUMMARIZECOLUMNS()` can easily group columns from different tables very easily when its near to impossible to perform the same using `SUMMARIZE()`.
+
+**For example :**</br>
+ If we want to group the *Product Colors* and *Calander Year* by the *Sales Amount* then, the DAX expression using `SUMMARIZE()` and `SUMMARIZECOLUMNS()` would be as follows :
+
+*Using `SUMMARIZE()`*
+
+```DAX
+EVALUATE
+FILTER (
+    SUMMARIZE (
+        CROSSJOIN ( VALUES ( 'Date'[Calendar Year] ), VALUES ( 'Product'[Color] ) ),
+        'Date'[Calendar Year],
+        'Product'[Color],
+        "Sales", [Sales Amount]
+    ),
+    NOT ( ISBLANK ( [Sales] ) )
+)
+```
+*Using `SUMMARIZECOLUMNS()`*
+
+```DAX
+EVALUATE
+SUMMARIZECOLUMNS (
+    'Date'[Calendar Year],
+    'Product'[Color],
+    "Sales", [Sales Amount]
+)
+```
+
+Few additional DAX features that comes with `SUMMARIZECOLUMNS()` are :
+
+- `IGNORE`
+- `ROLLUPGROUP`
+- `ROLLUPADDISSUBTOTAL`
+- `VISUAL`
+
+
+## `CROSSJOIN()`
+
+The `CROSSJOIN()` performs the cartesian product between two tables.
+
+If we want to see all the possible combination that can happen between the *Product Brands* and *Product Colors* then, we need to write the following DAX expression :
+
+```DAX
+EVALUATE
+CROSSJOIN (
+    DISTINCT ( 'Product'[Brand] ),
+    DISTINCT ( 'Product'[Color] )
+)
+```
+
+***Difference between `SUMMARIZE()` and `CROSSJOIN()` :***
+
+- `SUMMARIZE()` provides all the existing combinations between the columns for a given table, whereas, `CROSSJOIN()` provides all the possible combinations between the two columns from any table.
+
+Therefore, if we want to see the *Sales Amount* for all the possible combinations of *Product Color* and *Product Brand* then, we have to write the following DAX expression :
+
+```dax
+EVALUATE
+ADDCOLUMNS (
+    CROSSJOIN (
+        DISTINCT ( 'Product'[Brand] ),
+        DISTINCT ( 'Product'[Color] )
+    ),
+    "Sales", [Sales Amount]
+)
+```
+>***Notes :*** `DISTINCT()` ignores the blank rows to execute the distinct elements of a column.
+
+The *Sales Amount* will show `BLANK()`, if there is no such existing combination between the *Product Color* and *Product Brand* but, we can see all the possible combinations which is not possible with `SUMMARIZE()`.
+
+To see `0`instead of `BLANK()`, we can simply add `0` to *Sales Amount*, as follows :
+
+```dax
+EVALUATE
+ADDCOLUMNS (
+    CROSSJOIN (
+        DISTINCT ( 'Product'[Brand] ),
+        DISTINCT ( 'Product'[Color] )
+    ),
+    "Sales", [Sales Amount] + 0
+)
+```
+## `TOPN()`
+
+`TOPN()` simply returns the TOP N rows of the table.
+
+To see *Top 10 Product Names* by *Sales Amount*, we can execute the following DAX expression :
+
+```DAX
+EVALUATE
+TOPN (
+    10,
+    ADDCOLUMNS (
+        VALUES ( 'Product'[Product Name] ),
+        "Sales", [Sales Amount]
+    ),
+    [Sales]
+)
+```
+
+> ***Note :*** In case of ties in *Sales Amount*, we can have more than 10 rows as output.
+
+
+## `GENERATE()`
+
+The `GENERATE()` function is equivalent to `APPLY` in *SQL* , i.e., it passes each element from the *<<Firt Argument>>* as a filter to its *<< Second Argument>>* to perform a dynamic filtering.
+
+Therefore, to see the *Top 3 Product Names* by *Sales Amount* for each *Product Category*, we can write the following DAX expression :
+
+```DAX
+EVALUATE
+GENERATE (
+    VALUES ( 'Product Category'[Category] ),
+    CALCULATETABLE (
+        TOPN (
+            3,
+            ADDCOLUMNS (
+                VALUES ( 'Product'[Product Name] ),
+                "Sales", [Sales Amount]
+            ),
+            [Sales]
+        )
+    )
+)
+```
+
+>***Notes :*** As a best practice to perform dynamic filtering, we enclosed the *<< Second Argument >>* within the `CALCULATETABLE()`.
+
+## `ROW()`
+
+The `ROW()` function creates a table with only one row, therefore, if we just want to show the *Sales Amount* with its column name as "*Sales*" then, we can execute the following DAX expression :
+
+```dax
+EVALUATE
+ROW (
+    "Sales", [Sales Amount]
+)
+```
+
+
+
+
+
+
 
 
 
