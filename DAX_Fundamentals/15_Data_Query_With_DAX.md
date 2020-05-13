@@ -119,7 +119,7 @@ FILTER('Product',[Sales Amount]>1000000)
 ```
 >***Note :***</br>
 
-
+*{To be updated}*
 
 
 ## `SELECTCOLUMNS()`
@@ -156,6 +156,7 @@ ADDCOLUMNS (
 ```
 
 ### Using `ADDCOLUMNS()` & `SELECTCOLUMNS()` Together
+---
 
 ```DAX
 EVALUATE
@@ -168,6 +169,62 @@ ADDCOLUMNS (
     "Product Color Amount", [Sales Amount]
 )
 ```
+
+From the results, we can see how `ADDCOLUMNS()` is different than `SELECTCOLUMNS()` :
+
+- For `SELECTCOLUMNS()` the *Sales Amount* is different is each row, even if we have the same colors repeated and this simply because, the calculation is originally executed in the *Product* table and projected in the newly created table.
+
+- Unlike `SELECTCOLUMNS()`, `ADDCOLUMN()` calculations are executed in the current row context of the newly formed table and hence, we see a unique *Sales Amounts* for unique color type.
+
+- If instead of just extracting the *'Product'[Color]* column, if we would have extracted the whole *Products* table along with the *Sales Amount* column then, we will get the same result for `SELECTCOLUMNS()` and `ADDCOLUMNS()` .
+
+## `SUMMARIZE()`
+
+The `SUMMARIZE()` function performs the *Group By* operation in DAX.
+
+***For example :***</br>
+To see all the unique *Product Categories* that has atleast one transaction in the *Sales* table, we can write the following DAX expression :
+
+```dax
+EVALUATE
+SUMMARIZE ( Sales, 'Product Category'[Category] )
+```
+
+>***Notes :***</br>
+`ALL('Product Category'[Category])` will give all the unique *Product Categories* even they don't have any transaction associated with the *Sales* table.
+
+We can use `SUMMARIZE()` to get the *Sales Amount* grouped by the *Product Category* and *Product Color*, as follows :
+
+```DAX
+EVALUATE
+SUMMARIZE (
+    Sales,
+    'Product Category'[Category],
+    'Product'[Color],
+    "Sales Amount", [Sales Amount]
+)
+```
+> ***Warning :***</br>
+Due to performance and semantic issues, it is not suggested to perform a *Group By* operation just by using `SUMMARIZE()`; however, we can use `ADDCOLUMNS()` along with `SUMMARIZE()` to perform the same, as follows :
+
+```DAX
+EVALUATE
+ADDCOLUMNS (
+    SUMMARIZE ( Sales, 'Product Category'[Category], 'Product'[Color] ),
+    "Sales Amount", [Sales Amount]
+)
+```
+## `SUMMARIZECOLUMNS()`
+
+`SUMMARIZECOLUMNS()` is the more advanced version of `SUMMARIZE()` but, it can't be used as a *Calculated Measure* in *Power BI* or, *Power Pivot* as it requires the *EVALUATE* clause for execution and doesn't support the context transition.
+
+Therefore, it is only useful for querying te tabular models.
+
+To get 
+
+
+
+
 
 
 
