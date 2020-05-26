@@ -513,4 +513,3 @@ SUMX (
 ```
 
 `SUMX()` computes the last balance customer by customer and sum them up for the grand total.
-For testing it
