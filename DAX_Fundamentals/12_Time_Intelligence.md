@@ -23,11 +23,13 @@ The time intelligence functions are table functions.
 2. `DATESYTD()`
 3. `TOTALYTD()`
 4. `DATEADD()`
-
+5. `SAMEPERIODLASTYEAR()`
+6. `PARALLELPERIOD()`
+7. `PREVIOUSYEAR()`/ `PREVIOUSQUATER()` / `PREVIOUSMONTH()` / `PREVIOUSDAY()`
+8. `DATESINPERIOD()`
 
 
 ## `DATESBETWEEN()`
-
 
 Let's first try to calculate the "Sales Amount" between a certain range of dates using simple DAX code
 
@@ -53,6 +55,7 @@ CALCULATE(
     )
 )
 ```
+
 We can also calculate the "Sales YTD" using the `DATESBETWEEN` as follows -:
 
 ```dax
@@ -110,6 +113,44 @@ CALCULATE([Sales Amount], Custom_YTD)
 ```
 
 In DAX, we have customized time intelligence functions that help us in calculating YTD, so that, we don't have to write so much for calculating "*Sales YTD*"
+
+#### Calculating Running Total (Cumulative Sum)
+
+We can calculate the cumulative sum or, running total in 2 ways, i.e.,
+
+1. Using Time Intelligence
+2. Without Using Time Intelliigence
+
+Without using the time intelligence functions, we can calculate the running total as follows -:
+
+```dax
+Cumulative Sales Amount =
+
+VAR LastVisibleDate = MAX('Date Table'[Date])
+
+RETURN
+CALCULATE(
+    [Sales Amount],
+    'Date Table'[Date] <= LastVisibleDate
+)
+```
+
+We can calculate the same thing using a time intelligence function that we have already discussed, i.e., `DATESBETWEEN()`, as follows -:
+
+```dax
+Cumulative Sales Amount =
+
+VAR Last_Visible_Day = MAX('Date Table'[Date])
+RETURN
+CALCULATE(
+    [Sales Amount],
+    DATESBETWEEN(
+        'Date Table'[Date],
+        DATE(2007,1,1),
+        Last_Visible_Day
+    )
+)
+```
 
 ## `DATESYTD()`
 
@@ -348,44 +389,6 @@ CALCULATE(
 
 Using the `DATESINPERIOD()` fucntion, we can also calculate the moving total by `YEAR`,`QUATER`, `MONTH` and `DAYS` as well.
 
-## Calculating Running Total (Cumulative Sum)
-
-We can calculate the cumulative sum or, running total in 2 ways, i.e.,
-
-1. Using Time Intelligence
-2. Without Using Time Intelliigence
-
-Without using the time intelligence functions, we can calculate the running total as follows -:
-
-```dax
-Cumulative Sales Amount =
-
-VAR LastVisibleDate = MAX('Date Table'[Date])
-
-RETURN
-CALCULATE(
-    [Sales Amount],
-    'Date Table'[Date] <= LastVisibleDate
-)
-```
-
-We can calculate the same thing using a time intelligence function that we have already discussed, i.e., `DATESBETWEEN()`, as follows -:
-
-```dax
-Cumulative Sales Amount =
-
-VAR Last_Visible_Day = MAX('Date Table'[Date])
-RETURN
-CALCULATE(
-    [Sales Amount],
-    DATESBETWEEN(
-        'Date Table'[Date],
-        DATE(2007,1,1),
-        Last_Visible_Day
-    )
-)
-```
-
 ## MIXING TIME INTELLIGENCE FUNCTIONS
 ---
 
@@ -438,13 +441,28 @@ The problem with above formula is :
 
 ## Semi-Additive Measures
 
-- `SUM()` over all the dimensions is called as "*Additive Measure*"
-- *Semi-additive measures are :*
-  - `SUM()` over some of the dimensions
-  -
+##### Additive Measures :
 
+Additive measures are those that summed up over any dimension.
 
-The "*Date*" dimension is non-additive in general and it becomes a problem when we are in a situation of calculating the current account balance of customers.
+***For example :***<br>
+The "*Sales Amount*" is an additive measure that gets summed up over any dimension ; it maybe over time or, category etc. and the grand total is also the sum of all individual numbers.
+
+So, the `SUM()` or, `SUMX()` functions are actually the additive measures.
+
+##### Non-additive Measures :
+
+Non-additive measures are those that doesn't summed up over the dimension.
+
+***For example :*** The `DISTINCTCOUNT()` function gives dimension count and we can't sum-up the counts.
+
+Similarly, The "*Date*" dimension is non-additive.
+
+##### Semi-additive Measures :
+
+Semi-additive measures are sometimes additives and sometimes not.
+
+For example : The "*Current Account Balance*" is non-additive for a single customer whereas, its additive for multiple customers.
 
 The current account balance of a customer for a month is nothing but, the balance on the last date of the month.
 
