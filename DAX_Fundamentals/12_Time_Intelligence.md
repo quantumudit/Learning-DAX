@@ -463,7 +463,7 @@ The "_Sales Amount_" is an additive measure that gets summed up over any dimensi
 
 So, the `SUM()` or, `SUMX()` functions are actually the additive measures.
 
-##### Non-additive Measures :
+#### Non-additive Measures :
 
 Non-additive measures are those that doesn't summed up over the dimension.
 
@@ -471,11 +471,11 @@ Non-additive measures are those that doesn't summed up over the dimension.
 
 Similarly, The "_Date_" dimension is non-additive.
 
-##### Semi-additive Measures :
+#### Semi-additive Measures :
 
 Semi-additive measures are sometimes additives and sometimes not.
 
-For example : The "_Current Account Balance_" is non-additive for a single customer whereas, its additive for multiple customers.
+**_For example :_** The "_Current Account Balance_" is non-additive for a single customer whereas, its additive for multiple customers.
 
 The current account balance of a customer for a month is nothing but, the balance on the last date of the month.
 
@@ -513,3 +513,21 @@ SUMX (
 ```
 
 `SUMX()` computes the last balance customer by customer and sum them up for the grand total.
+
+**_Specific Business Requirement_**
+
+If we want to show the total balance only for the the customers who reported on the latest date available then, we can use the following formula :
+
+```DAX
+Account_Balances =
+VAR LastBalanceDate =
+CALCULATE(
+    MAX('Balances'[Date]),
+    ALL('Balances'[Name])
+)
+RETURN
+CALCULATE(
+    SUM('Balances'[Balance])
+    'Date'[Date] = LastBalanceDate
+)
+```
