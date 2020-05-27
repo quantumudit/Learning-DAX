@@ -4,15 +4,15 @@ Time intelligence is a set of operations used for computations over date and tim
 
 Common time intelligence operations are :
 
--   Year To Date (YTD)
--   Quater To Date (QTD)
--   Month To Date (MTD)
--   Running Total (3MMT, 6MMT, 12MMT etc.)
--   Same Period Last Year (SPLY)
--   Past Period (PP)
--   Working days computations
--   Fiscal year computations
--   Calculation over weeks
+- Year To Date (YTD)
+- Quater To Date (QTD)
+- Month To Date (MTD)
+- Running Total (3MMT, 6MMT, 12MMT etc.)
+- Same Period Last Year (SPLY)
+- Past Period (PP)
+- Working days computations
+- Fiscal year computations
+- Calculation over weeks
 
 and so on.
 
@@ -221,9 +221,9 @@ DATEADD( << Date >>, << -i >>, << Time Period >> )
 
 In the above syntax :
 
--   `<< Date >>` is the _Date_ column.
--   `<< -i >>` is the number period to shift backwards.
--   `<< Time Period >>` can be `YEAR`, `QUATER`, `MONTH` or, `DAY`.
+- `<< Date >>` is the _Date_ column.
+- `<< -i >>` is the number period to shift backwards.
+- `<< Time Period >>` can be `YEAR`, `QUATER`, `MONTH` or, `DAY`.
 
 We can use `DATEADD()` to calculate the "_Same Period Last Year Sales Amount (Sales SPLY)_" as follows -:
 
@@ -251,7 +251,7 @@ In the above formula, the "_Sales SPLM_" for "_January-2007_" will remain blank 
 
 #### CALCULATING GROWTH %
 
-* * *
+---
 
 We can use the following DAX formula to calculate the `Growth %` -:
 
@@ -290,7 +290,7 @@ We can observe that the functions `DATEADD()` and `SAMEPERIODLASTYEAR()` calcula
 So, if we drill down from year to quaters or, year to month or, year to day then, we can see the calculation happening.
 
 Suppose, we are using `DATEADD()` or, `SAMEPERIODLASTYEAR()` to calculate "_Sales SPLY_" then we can see the _2007 Sales Amount_ against the _2008_ row and _2008 Sales Amount_ against _2009_ row and so on.</br>
-         Moreover, if we drill down from _Year to Month_ then, we can see the "_January-2007 Sales Amount_" against the "_January-2008_" row, "_February-2007 Sales Amount_"  against "_February-2008_" row and so on.
+         Moreover, if we drill down from _Year to Month_ then, we can see the "_January-2007 Sales Amount_" against the "_January-2008_" row, "_February-2007 Sales Amount_" against "_February-2008_" row and so on.
 
 Let's say, we don't want this granularity level information, rather we want to see only the sales amount of last year irrespective of any row information available, then, we can use `PARALLELPERIOD()` function instead of `DATEADD()`.
 
@@ -304,7 +304,7 @@ CALCULATE(
 )
 ```
 
--   Using `PARALLELPERIOD()` function, we can calculate "_Sales YTD Over Past Year (Sales YTDOPY)_", as follows -:
+- Using `PARALLELPERIOD()` function, we can calculate "_Sales YTD Over Past Year (Sales YTDOPY)_", as follows -:
 
 ```dax
 Sales YTDOPY =
@@ -404,7 +404,7 @@ Using the `DATESINPERIOD()` fucntion, we can also calculate the moving total by 
 
 ## MIXING TIME INTELLIGENCE FUNCTIONS
 
-* * *
+---
 
 To calculate "_Sales Past Year YTD_", we can mix the the two time intelligence functions as follows :
 
@@ -449,8 +449,8 @@ RETURN
 
 The problem with above formula is :
 
--   `VAR` returns a constant number/table that can't be manipulated by the `CALCULATE()` function, i.e., `VAR` calculates the results beyond the scope of `CALCULATE()` function present in the `RETURN` statement.
--   It is safe to use `VAR` when the functions inside `RETURN` doesn't depend upon the filter context of defined variables.
+- `VAR` returns a constant number/table that can't be manipulated by the `CALCULATE()` function, i.e., `VAR` calculates the results beyond the scope of `CALCULATE()` function present in the `RETURN` statement.
+- It is safe to use `VAR` when the functions inside `RETURN` doesn't depend upon the filter context of defined variables.
 
 ## Semi-Additive Measures
 
