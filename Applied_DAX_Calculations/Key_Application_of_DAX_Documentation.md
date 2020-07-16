@@ -157,7 +157,7 @@ Along with measure branching, we can combine DAX functions together to get a cer
 We can calculate "_Sales Segment_",i.e., the "_Total Sales_" when the "_Profit Margin_" is greater than 35% :
 
 ```dax
-Sales Segment = 
+Sales Segment =
 CALCULATE (
     [Total Sales],
     FILTER (
@@ -166,6 +166,7 @@ CALCULATE (
     )
 )
 ```
+
 The above formula iterates over the "_Sales_" table for checks whether the "_Profit Margin_" for each row item is greater than 35% or, not and then, returns a virtual table with row elements having "_Profit Margin_" greater than 35% and the "_Total Sales_" gets calculated only for those rows.
 
 We can achieve the same result by using `SUMX()` function too :
@@ -193,6 +194,7 @@ SUMX (
     [Total Cost]
 )
 ```
+
 ## Error Handling
 
 Some of the important DAX function that are used to handle possible errors and blank values are :
@@ -203,7 +205,7 @@ Some of the important DAX function that are used to handle possible errors and b
 
 **For Example :**
 
-Suppose, we have to calculate the "_YoY Sales Difference_",i.e., the difference between current year sales and past year sales then, we might caught into a situation where, we would not be having data for the last year sales. 
+Suppose, we have to calculate the "_YoY Sales Difference_",i.e., the difference between current year sales and past year sales then, we might caught into a situation where, we would not be having data for the last year sales.
 
 In those situation the result of "_YoY Sales Difference_" would be ambiguous thus, we can use error handling DAX function to avoid such situation as follows :
 
@@ -219,7 +221,7 @@ IF (
 Where "_Sales LY_" is :
 
 ```dax
-Sales Last Year = 
+Sales Last Year =
 CALCULATE (
     [Total Sales],
     SAMEPERIODLASTYEAR ( Dates[Date] )
@@ -245,7 +247,8 @@ IF (
     BLANK ()
 )
 ```
-similarly, 
+
+similarly,
 
 ```dax
 -Ve YoY Sales Difference =
@@ -302,10 +305,8 @@ DIVIDE (
     0
 )
 ```
+
 ## Formatting Function
-
-
-
 
 ## Table Functions
 
@@ -330,7 +331,7 @@ We can use the **DAX Studio** to visualize the virtual tables generated through 
 
 ### `FILTER()`
 
-The following DAX expression returns a table where the "_Order Quantity_" is greater than 10  and "_Channel_" is "Export":
+The following DAX expression returns a table where the "_Order Quantity_" is greater than 10 and "_Channel_" is "Export":
 
 ```dax
 EVALUATE
@@ -341,7 +342,7 @@ FILTER (
 )
 ```
 
-Now, we can put up this virtual table within a `CALCULATE()` function to calculate the "_Total Sales_" only for the row items where "_Order Quantity_" is greater than 10  and "_Channel_" is "Export", as follows :
+Now, we can put up this virtual table within a `CALCULATE()` function to calculate the "_Total Sales_" only for the row items where "_Order Quantity_" is greater than 10 and "_Channel_" is "Export", as follows :
 
 ```dax
 Export Sales High Quantity =
@@ -365,6 +366,7 @@ To get a list of unique "_Channel_" we have in the "_Sales_" table :
 EVALUATE
 VALUES ( Sales[Channel] )
 ```
+
 We can use the `VALUES()` function to calculate the average sales for warehouses, as follows :
 
 ```dax
@@ -393,8 +395,6 @@ Blank values wouldn't appear when we use the column with `DISTINCT()`.
 
 ## `SELECTEDVALUE()`
 
-
-
 ## `ALL()`
 
 The `ALL()` function removes filter from the current context. So, it is mostly used to calculate shares or, part to whole calculations.
@@ -403,32 +403,4 @@ We can calculate "_% Total Product Sales_" using the `ALL()` function as follows
 
 ```dax
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```
