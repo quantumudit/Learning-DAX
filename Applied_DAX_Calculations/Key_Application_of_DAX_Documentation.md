@@ -393,14 +393,340 @@ The `DISTINCT()` function is very similar to the `VALUES()` function but, the mi
 
 Blank values wouldn't appear when we use the column with `DISTINCT()`.
 
-## `SELECTEDVALUE()`
+The behavior of `DISTINCT()` & `VALUES()` functions in case of a relationship mismatch can be understood with the following example :
 
-## `ALL()`
+Let's say, if we have some customers information in the "_Sales_" table (Facts table) which are not present in the "_Customers_" table (Dimension table) then, `VALUES([Customer Name])` will provide the "_Customer Name_" along with a blank row that represents the missing customers in the "_Customers_" table.
+
+In such scenario, if we show the "_Sales Amount_" by Customers as a visual in Power BI then, a blank row will appear that aggregates "_Sales Amount_" for all the missing customers.
+
+But, if we use `DISTINCT()` then, we will not see any blank rows.
+
+Therefore, its always preferred to use `VALUES()` over `DISTINCT()` to avoid data loss and troubleshoot relationship mismatch issues.
+
+### `SELECTEDVALUE()`
+
+If based on the context the virtual table generated through `VALUES()` function just has one row (a single value) then, the table function `VALUES()` could be used a measure.
+
+But, in some cases, we can't just use `VALUES()` alone as a measure.
+
+**For Example :**
+
+If we are showing a matrix visual of "Sales Amount" by "Customer Names" in a matrix visual along with the grand total row then, if we place the following DAX function then, it will throw an error, only because of the existence of grand total in the visual :
+
+```dax
+Cust. Nm. = VALUES(Customers[Customer Name])
+```
+
+To resolve this problem, we have to use `HASONEVALUE()` function with `IF()` clause to ensure a one row virtual table as the output context for `VALUES()` function to work properly.
+
+So, the correct formula would be:
+
+```dax
+Cust. Nm. =
+IF (
+    HASONEVALUE ( Customers[Customer Names] ),
+    VALUES ( Customers[Customer Names] ),
+    BLANK ()
+)
+```
+
+But, there is a simpler way to achieve the same result with `SELECTEDVALUE()` function.
+
+So, we can actually achieve the same desired output, with the following DAX function :
+
+```dax
+Cust. Nm. =
+SELECTEDVALUE ( Customers[Customer Names], BLANK () )
+```
+
+### `ALL()`
 
 The `ALL()` function removes filter from the current context. So, it is mostly used to calculate shares or, part to whole calculations.
 
 We can calculate "_% Total Product Sales_" using the `ALL()` function as follows :
 
 ```dax
-
+% Total Product Sales =
+DIVIDE (
+    [Total Sales],
+    CALCULATE ( [Total Sales], ALL ( Products[Product Name] ) ),
+    0
+)
 ```
+
+### `ALLEXCEPT()`
+
+The `ALLEXCEPT()` function removes the filter from the current context except from the specified attribute/column.
+
+### `ALLSELECTED()`
+
+## Context Manipulating Function
+
+The most important DAX functions that manipulates the current context in DAX are :
+
+1. `ISFILTERED()`
+2. `ISCROSSFILTERED()`
+3. `RELATED()`
+4. `EARLIER()`
+
+### `ISFILTERED()`
+
+The `ISFILTERED()` function returns `True` if the attribute gets directly filtered by the current filter context.
+
+**For Example :**
+
+If we have a visual showing the "_Total Sales_" by "_Customer Name_" then, `ISFILTERED()` will return `True` for the "_Customers_" table and "_Customer Name_" column only.
+
+Also, at the grand total level, the filter context over the "_Customer Name_" collapses and thus, `ISFILTERD()` returns `False` at the Total level.
+
+### `ISCROSSFILTERED()`
+
+The `ISCROSSFILTERED()` function returns `True` if the attribute gets filtered indirectly (via relationships) by the current filter context.
+
+**For Example :**
+
+In the above stated scenario, `ISCROSSFILTERED()` will return `True` as the "_Sales_" table, "_Customer ID_" column of both "_Sales_" and "_Customer_" table gets filtered indirectly through the relationship.
+
+However, the attributes from the other dimension table will return `False` as they neither gets filtered directly or, indirectly by the current filter context.
+
+Similarly, just like the `ISFILTERED()` function, `ISCROSSFILTERED()` will also return `False` at the grand total level.
+
+### `RELATED()`
+
+The `RELATED()` function allows the user to move from one table to the other via relationship.
+
+So, if we need a particular attribute from the dimension table to the fact table, then, we can use the `RELATED()` function, as follows :
+
+**For Example :**
+
+If we want the "_Product Names_" in the "_Sales_" table, then, we have to write the following DAX expression :
+
+```dax
+Prod. Nm. = RELATED ( 'Products'[Product Name] )
+```
+
+### `EARLIER()`
+
+## The `CALCULATE()` Function
+
+The `CALCULATE()` function allows to override or, add the current context before the evaluating the expression.
+
+### Advantages of using `CALCULATE()`
+
+- `CALCULATE()` allows to create a variety of different filters in the calculations that can't be created in any other way.
+
+- Use of additional DAX functions like `FILTER()`, `ALL()`, `ALLSELECTED()`, `VALUES()`, `DISTINCT()` etc. with `CALCULATE()`, modifies the context and filtering on the table prior to the evaluation of the expression and thus, results in faster execution of DAX queries.
+
+### Manipulating Relationships with `CALCULATE()`
+
+The two important DAX functions that are used with `CALCULATE()` function to manipulate the properties of existing relationships (both active & inactive) are:
+
+- `USERELATIONSHIP()`
+- `CROSSFILTER()`
+
+#### `USERELATIONSHIP()`
+
+## Time Intelligence Functions
+
+Some of the most used time intelligence functions used in DAX are :
+
+A date table / calender table is essential for working with time intelligence function.
+
+There are 2 ways to create date table / calender table within Power BI, i.e.,
+
+- Using Power Query
+- Using DAX
+
+The following DAX code, creates a simple "Dates" table for our model :
+
+```dax
+Dates =
+VAR FirstOrderDate =
+    MIN ( Sales[OrderDate] )
+VAR FirstOrderYear =
+    YEAR ( FirstOrderDate )
+VAR DateRange =
+    FILTER ( CALENDARAUTO (), YEAR ( [Date] ) >= FirstOrderYear )
+VAR FYStartMonth = 4
+RETURN
+    ADDCOLUMNS (
+        DateRange,
+        "Year", YEAR ( [Date] ),
+        "QuarterNumber", QUARTER ( [Date] ),
+        "Quarter", FORMAT ( [Date], "\QQ" ),
+        "MonthNumber", MONTH ( [Date] ),
+        "Full Month Name", FORMAT ( [Date], "mmmm" ),
+        "Month", FORMAT ( [Date], "mmm" ),
+        "Quarter-YearSort", CONVERT ( FORMAT ( [Date], "yyyy0Q" ), INTEGER ),
+        "Quarter-Year", FORMAT ( [Date], "\QQ yyyy" ),
+        "Month-YearSort", IF (
+            MONTH ( [Date] ) <= 9,
+            CONVERT ( FORMAT ( [Date], "yyyy0m" ), INTEGER ),
+            CONVERT ( FORMAT ( [Date], "yyyym" ), INTEGER )
+        ),
+        "Month-Year", FORMAT ( [Date], "mmm yyyy" ),
+        "FY", IF (
+            MONTH ( [Date] ) >= FYStartMonth,
+            "FY"
+                & RIGHT ( YEAR ( [Date] ) + 1, 2 ),
+            "FY" & RIGHT ( YEAR ( [Date] ), 2 )
+        )
+    )
+```
+
+### `DATEADD()`
+
+The `DATEADD()` is one of the most versatile time intelligence function available.
+
+By using this single function, we can perform a lot of time intelligence calculations, as follows :
+
+- Calculating the last year sales, i.e., "_Sales LY_" :
+
+```dax
+Sales LY =
+CALCULATE ( [Total Sales], DATEADD ( Dates[Date], -1, YEAR ) )
+```
+
+- Calculating the last month sales, i.e., "_Sales LM_" :
+
+```dax
+Sales LM =
+CALCULATE ( [Total Sales], DATEADD ( Dates[Date], -1, MONTH ) )
+```
+
+- Calculating the next month sales, i.e., "_Sales NM_" :
+
+```dax
+Sales NM =
+CALCULATE ( [Total Sales], DATEADD ( Dates[Date], 1, MONTH ) )
+```
+
+- Calculating day-on-day growth, i.e., "_DoD Growth_" :
+
+```dax
+DoD Growth =
+DIVIDE (
+    [Total Sales],
+    CALCULATE ( [Total Sales], DATEADD ( Dates[Date], -1, DAY ) ),
+    0
+) - 1
+```
+
+- Calculating day-on-day growth, i.e., "_MoM Growth_" :
+
+```dax
+MoM Growth =
+DIVIDE (
+    [Total Sales],
+    CALCULATE ( [Total Sales], DATEADD ( Dates[Date], -1, MONTH ) ),
+    0
+) - 1
+```
+
+### `SAMEPERIODLASTYEAR()`
+
+The `SAMEPERIODLASTYEAR()` enables to calculate the value of a measure one year before.
+
+So, we can calculate the "_Sales LY_" in a single line using the `SAMEPERIODLASTYEAR()` function, as follows :
+
+```dax
+Sales SPLY =
+CALCULATE(
+    [Total Sales],
+    SAMEPERIODLASTYEAR(Dates[Date])
+)
+```
+
+We can calculate the value of a measure 2 year before by using the `SAMEPERIODLASTYEAR()` function two times as follows :
+
+```dax
+Sales 2yr Ago =
+CALCULATE (
+    CALCULATE ( [Total Sales], SAMEPERIODLASTYEAR ( Dates[Date] ) ),
+    SAMEPERIODLASTYEAR ( dates[Date] )
+)
+```
+
+But, for such scenarios, the `DATEADD()` function works best, as follows :
+
+```dax
+Sales LY =
+CALCULATE ( [Total Sales], DATEADD ( Dates[Date], -2, YEAR ) )
+```
+
+### Time Aggregations
+
+Aggregations over time can be done with the following DAX functions :
+
+- `DATESYTD()` : For year-to-date calculation
+- `DATESQTD()` : For quarter-to-date calculation
+- `DATESMTD()` : For month-to-date calculation
+
+#### `DATESYTD()`
+
+The following DAX expression calculates, "_Sales YTD_" :
+
+```dax
+Sales YTD =
+CALCULATE ( [Total Sales], DATESYTD ( Dates[Date] ) )
+```
+
+Similarly, we can calculate "_Sales QTD_" and "_Sales MTD_" as follows :
+
+For "_Sales QTD_"
+
+```dax
+Sales QTD =
+CALCULATE ( [Total Sales], DATESQTD ( Dates[Date] ) )
+```
+
+For "_Sales MTD_"
+
+```dax
+Sales MTD =
+CALCULATE ( [Total Sales], DATESMTD ( Dates[Date] ) )
+```
+
+We can also perform the same time aggregations, without using the `CALCULATE()` function as follows :
+
+For "_Sales YTD_" :
+
+```dax
+Sales YTD (Direct) = TOTALYTD([Total Sales],Dates[Date])
+```
+
+### Time Comparisons
+
+There are some specific time intelligence functions in DAX that calculates measures with a pre-defined context.
+
+These functions are as follows :
+
+- `PREVIOUSDAY()`
+- `PREVIOUSMONTH()`
+- `PREVIOUSQUARTER()`
+- `PREVIOUSYEAR()`
+- `PARALLELPERIOD()`
+
+#### `PREVIOUSMONTH()`
+
+```dax
+Sales Previous Month =
+CALCULATE ( [Total Sales], PREVIOUSMONTH ( Dates[Date] ) )
+```
+
+The above measure, calculates at the month context, i.e., if we have individual dates in the rows then, we will be seeing the same number for each date of the full month.
+
+#### `PARALLELPERIOD()`
+
+By using `PARALLELPERIOD()`, we can dynamically perform time intelligence calculation with a pre-defined context.
+
+`PARALLELPERIOD()` omits the need of using the `PREVIOUSMONTH()`, `PREVIOUSQUARTER()` and `PREVIOUSYEAR()`, as follows :
+
+- To calculate previous month sales at month context :
+
+```dax
+Sales Previous Month (Dynamic) =
+CALCULATE ( [Total Sales], PARALLELPERIOD ( Dates[Date], -1, MONTH ) )
+```
+
+### Information Based Time Intelligence
