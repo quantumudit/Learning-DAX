@@ -730,3 +730,33 @@ CALCULATE ( [Total Sales], PARALLELPERIOD ( Dates[Date], -1, MONTH ) )
 ```
 
 ### Information Based Time Intelligence
+
+Some of the information based time intelligence functions are as follows:
+
+-
+
+#### `OPENINGBALANCEMONTH()`
+
+With `OPENINGBALANCEMONTH()` formula, we get the number present in the last date of the previous month as the opening balance for the current month.
+
+This could be useful in financial analysis scenario, inventory management or, stocks calculations, in particular.
+
+- We can calculate `OPENINGBALANCEMONTH()` for the "_Total Sales_", as follows:
+
+```dax
+Opening Month Sales Balance =
+OPENINGBALANCEMONTH ( [Total Sales], Dates[Date] )
+```
+
+#### `STARTOFMONTH()`
+
+The `STARTOFMONTH()` works opposite to the `OPENINGBALANCEMONTH()` formula, i.e., it retrieves the value present in the first date of the current month.
+
+- We can calculate the `STARTOFMONTH()` for the "_Total Sales_" as follows:
+
+```dax
+Start of Month Balance =
+CALCULATE ( [Total Sales], STARTOFMONTH ( Dates[Date] ) )
+```
+
+#### `ENDOFYEAR()`
